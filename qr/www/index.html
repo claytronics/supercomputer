@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
+    <title>IP QR Code</title>
+  </head>
+  <body>
+    <!-- keep track of device ready state -->
+    <div id="deviceready" style="display: none;" value="0"> </div>
+    
+    <button id="scan_button" onclick="barcodeScanner.scan();"> Scan Now </button>
+    <br /><br /><br />
+    <button id="show_ip_button" onclick="IPUtil.showIP();"> Display My IP </button>
+    <br /><br /><br />
+    <button id="hide_button" onclick="IPUtil.hideIP();"> Hide My IP </button>
+    <br /><br /><br />
+
+    <p id="ip" style="display: none;">Finding Device IP...</p> <br />
+
+    <div id="ip_qr" style="diplay: none;"></div>
+
+    <!-- js libraries -->
+    <script type="text/javascript" src="phonegap.js"></script> <!-- workaround, replaced phonegap.js -->
+    <script type="text/javascript" src="js/index.js"></script>
+
+    <!-- custom wrapper for phonegap barcodescanner plugin -->
+    <script type="text/javascript" src="js/barcode-scanner-interface.js"></script>
+
+    <!-- handle display user's IP information -->
+    <script type="text/javascript" src="js/ip-util.js"></script>
+    <script type="text/javascript" src="js/qr-generator/qrcode.min.js"></script>
+
+    <!-- initialize app -->
+    <script type="text/javascript">
+      app.initialize();
+    </script>
+  </body>
+</html>
