@@ -3,7 +3,7 @@ Javascript Libraries
 
 # barcode-scanner-interface.js
 - Uses Phonegap barcode scanner to scan for a barcode
-- Usage Example <pre><code>barcodeScanner.scane()</code></pre>
+- Usage Example <pre><code>barcodeScanner.scan()</code></pre>
 
 # ip-util.js
 - Get device's IP from native platform code. Ex:
