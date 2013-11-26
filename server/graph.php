@@ -10,6 +10,9 @@ $edges = $db->get_all_edges();
 
 $db->close();
 
-echo json_encode($edges);
+if($edges == NULL)
+  echo json_encode(array());
+else
+  echo json_encode($edges);
 
 ?>

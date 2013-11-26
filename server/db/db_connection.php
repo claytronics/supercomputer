@@ -64,6 +64,24 @@ class DBConnection {
 			
 		return $stmt->insert_id;
 	}
+
+  /* ENSURES: update user_join_time to the time now,
+   *  returns user_id of the client
+   */
+  public function keep_user_alive($ip){ 
+		$query = "UPDATE nodes SET user_join_time = NOW() WHERE user_ip = ?;";
+			
+		$stmt = $this->prepare_statement($query);
+    if(!$stmt)
+      return NULL;
+	  if(!$stmt->bind_param("s", $ip))
+			return NULL;
+		
+		if(!$stmt->execute())
+			return NULL;
+			
+		return $stmt->insert_id;
+  }
 	
 	/*
 	 *	ENSURES: returns user_id of the user with the corresponding ip
@@ -172,10 +190,43 @@ class DBConnection {
 		return true; 
   }
 
+  /* remove_inactive_users: remove users who have not reported in the past 
+   *  minute */
+  public function remove_inactive_users(){
+    /* 1 minute ago */
+    $now = date("Y-m-d H:i:s", strtotime("-1 minute"));
+
+		$query = "SELECT user_id FROM nodes WHERE user_join_time < ?;";
+		
+		$stmt = $this->prepare_statement($query);
+    if(!$stmt)
+      return 0;
+		if(!$stmt->bind_param("s", $now))
+			return 0;
+		
+		if(!$stmt->execute())
+			return 0;
+
+    $stmt->store_result();
+    $num = $stmt->num_rows;
+		if($num == 0)
+			return 0;
+
+		$stmt->bind_result($uid);
+		while($stmt->fetch()){
+      $this->delete_user($uid);
+    }
+		
+		return $num;
+  }
+
   /* get_all_edges: return all edges in an array mapping id to all neighbor ids
-   * ENSURES: returns NULL on failure 
+   * ENSURES: returns NULL on failure. removes all inactive users before 
+   *  generating the graph
    */
   function get_all_edges(){ 
+    $removed = $this->remove_inactive_users();
+
     $query = "SELECT * FROM edges";
 
 		$stmt = $this->prepare_statement($query);
