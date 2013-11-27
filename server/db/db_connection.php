@@ -112,7 +112,8 @@ class DBConnection {
 	}
 
   /* add_neighbor: add a neighbor to the user with uid 
-   * ENSURES: returns neighbor is on success, NULL otherwise
+   * ENSURES: returns array containing neighbor id and whether the neighbor 
+   *  relationship existed already, NULL otherwise
    *  insert 2 edges into edges table:
    *    uid -> ngh_id
    *    ngh_id -> uid
@@ -124,6 +125,8 @@ class DBConnection {
     
     if(!$ngh_id)
       return NULL;
+
+    $edge_exists = $this->edge_exists($uid, $ngh_id);
       
 		$query = "INSERT INTO edges(
       src_id,
@@ -152,7 +155,10 @@ class DBConnection {
 		if(!$exec)
 			return NULL;
 			
-		return $ngh_id;
+		return array(
+      "neighbor_id" => $ngh_id,
+      "edge_exists" => $edge_exists
+    );
   }
 
   /* delete a user with $uid
@@ -220,11 +226,29 @@ class DBConnection {
 		return $num;
   }
 
+  /* edge_exists: returns whether an edge exists */
+  public function edge_exists($src, $target){
+    $query = "SELECT * FROM edges WHERE 
+      (src_id = ? AND target_id = ?) OR (src_id = ? AND target_id = ?);";
+
+		$stmt = $this->prepare_statement($query);
+    if(!$stmt)
+      return NULL;	
+		if(!$stmt->bind_param("iiii", $src, $target, $src, $target))
+			return NULL;
+
+		if(!$stmt->execute())
+			return NULL;
+ 
+    $stmt->store_result();
+    return $stmt->num_rows != 0;
+  }
+
   /* get_all_edges: return all edges in an array mapping id to all neighbor ids
    * ENSURES: returns NULL on failure. removes all inactive users before 
    *  generating the graph
    */
-  function get_all_edges(){ 
+  public function get_all_edges(){ 
     $removed = $this->remove_inactive_users();
 
     $query = "SELECT * FROM edges";

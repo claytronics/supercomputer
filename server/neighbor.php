@@ -7,6 +7,7 @@
  */
 
 require_once("util.php");
+require_once("detect_location_change.php");
 require_once("db/db_connection.php");
 
 function reply_fail($msg){ 
@@ -36,14 +37,27 @@ if(!$uid){
   reply_fail("failed to get user id");
 }
 
-$ngh_id = $db->add_neighbor($uid, $ngh_ip);
-if(!$ngh_id){
+$info = $db->add_neighbor($uid, $ngh_ip);
+if($info == NULL){
   $db->close();
   reply_fail("failed to add neighbor into database");
 }
 
+$ngh_id = $info["neighbor_id"];
+
+/* check if the user is likely to have changed location if the edge 
+ * did not exist before */
+if(!$info["edge_exists"]){
+  if(detect_location_change($db->get_all_edges(), $uid, $ngh_id)){
+    log_location_change($uid, $ngh_id);
+  }
+}
+
 $db->close();
 
-echo json_encode(array("success" => 1, "neighbor_id" => $ngh_id));
+echo json_encode(array(
+  "success" => 1, 
+  "neighbor_id" => $ngh_id
+  ));
 
 ?>
